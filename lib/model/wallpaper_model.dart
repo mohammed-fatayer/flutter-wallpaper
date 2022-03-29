@@ -1,9 +1,9 @@
-class wallpaper1 {
+class Wallpaper1 {
   
   String thumblink;
   String fulllink;
 
-  wallpaper1(
+  Wallpaper1(
       {
       required this.thumblink,required this.fulllink
      });
