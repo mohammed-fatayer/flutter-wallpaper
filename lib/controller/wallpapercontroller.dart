@@ -12,7 +12,7 @@ import 'package:html/parser.dart' as parser;
 import 'package:url_launcher/url_launcher.dart';
 
 class Newscontroller extends GetxController {
-  late List<wallpaper1> wallpaperlist;
+  late List<Wallpaper1> wallpaperlist;
 
   late InterstitialAd rewardad;
   Map bannermap = {};
@@ -161,7 +161,7 @@ class Newscontroller extends GetxController {
               element.children[0].children[0].attributes["src"].toString();
           String image2 = image.replaceAll("thumb-", "");
 
-          wallpaperlist.add(wallpaper1(
+          wallpaperlist.add(Wallpaper1(
               thumblink:
                   element.children[0].children[0].attributes["src"].toString(),
               fulllink: image2));
