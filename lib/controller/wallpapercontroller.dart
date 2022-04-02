@@ -1,6 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_cache_manager/file.dart';
+import 'package:flutter_wallpaper_manager/flutter_wallpaper_manager.dart';
 import 'package:flutterproject2/model/ad_helper.dart';
 import 'package:flutterproject2/model/wallpaper_model.dart';
 import 'package:flutterproject2/view/mainpage.dart';
@@ -10,12 +13,15 @@ import 'package:http/http.dart' as http;
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:html/parser.dart' as parser;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:gallery_saver/gallery_saver.dart';
+import 'dart:convert' as io;
 
 class Newscontroller extends GetxController {
   late List<Wallpaper1> wallpaperlist;
 
   late InterstitialAd rewardad;
-  Map bannermap = {};
+  late BannerAd bannerad;
   List alldata = [];
   int currentmax = 23;
   bool bol2 = false;
@@ -25,14 +31,15 @@ class Newscontroller extends GetxController {
   late Image fullimagesize;
   bool isimageready = false;
   Random random = Random();
+  final _key = GlobalKey();
 
   ScrollController scrollController = Get.find();
   GetStorage box = GetStorage();
   @override
-  void onInit() {
+  void onInit() async {
     // TODO: implement onInit
     Adhelper.getInterstitialad();
-
+    bannerad = Adhelper.getbanerad();
     neWwallpaper();
 
     if (box.read("darktheme") != null) {
@@ -73,6 +80,15 @@ class Newscontroller extends GetxController {
   void fullimage(index) {
     Image fullimage = Image.network(
       "${controller.alldata[index].fulllink}",
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) {
+          return child;
+        } else {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      },
       fit: BoxFit.cover,
     );
     fullimagesize = fullimage;
@@ -80,7 +96,6 @@ class Newscontroller extends GetxController {
       isimageready = true;
 
       update();
-      
     });
     isimageready = false;
   }
@@ -96,16 +111,18 @@ class Newscontroller extends GetxController {
   }
 
   void newdata() async {
-    await neWwallpaper();
-    if (currentmax == alldata.length) {
-      Get.snackbar("Loading ", "no more wallpaper",
-          snackPosition: SnackPosition.BOTTOM);
-    } else {
-      currentmax = currentmax + 24;
-      currentmax >= alldata.length ? currentmax = alldata.length : currentmax;
+    WidgetsBinding.instance?.addPostFrameCallback((_) async {
+      await neWwallpaper();
+      if (currentmax == alldata.length) {
+        Get.snackbar("Loading ", "no more wallpaper",
+            snackPosition: SnackPosition.BOTTOM);
+      } else {
+        currentmax = currentmax + wallpaperlist.length;
+        currentmax >= alldata.length ? currentmax = alldata.length : currentmax;
 
-      update();
-    }
+        update();
+      }
+    });
   }
 
   void openurl(index) async {
@@ -128,16 +145,11 @@ class Newscontroller extends GetxController {
   }
 
   Future onrefresh() async {
-    currentmax = 23;
-
     await wallpaper();
 
     alldata.replaceRange(0, alldata.length, wallpaperlist);
-    // alldata.addAll(techradar);
+    currentmax = alldata.length;
 
-    // alldata.sort((a, b) => b.time.compareTo(a.time));
-    // update();
-    // Get.snackbar("Loading ", "Completed", snackPosition: SnackPosition.BOTTOM);
     update();
   }
 
@@ -160,48 +172,78 @@ class Newscontroller extends GetxController {
           String image =
               element.children[0].children[0].attributes["src"].toString();
           String image2 = image.replaceAll("thumb-", "");
+          String imagesize =
+              element.children[0].children[0].attributes["style"].toString();
+          imagesize = imagesize.replaceAll("height:", "");
+          imagesize = imagesize.replaceAll("px;", "");
+          int height = int.parse(imagesize);
 
           wallpaperlist.add(Wallpaper1(
               thumblink:
                   element.children[0].children[0].attributes["src"].toString(),
               fulllink: image2));
+
+          if (height < 300) {
+            wallpaperlist.removeLast();
+            print(height);
+          }
         });
+        if (wallpaperlist.length <= 15) {
+          await neWwallpaper();
+          
+        
+        }
       }
+      print(wallpaperlist.length);
     } catch (exception) {
       print(exception);
     } finally {}
   }
 
-  // Future gettechradar() async {
-  //   try {
-  //     techradar = [];
-  //     Uri url = Uri.parse("https://www.techradar.com/gaming/news");
+  Future setscreen(String url, String location) async {
+    var filepath = await cachwallpaper(url);
+    await bothscreenmethod(filepath.path, location);
+    Get.snackbar("set ${location}screen", "done",
+        snackPosition: SnackPosition.BOTTOM,
+        duration: const Duration(milliseconds: 800));
+  }
 
-  //     var response = await http.get(url);
+  Future bothscreenmethod(String path, String location) async {
+    try {
+      if (location == "home") {
+        int locationpath = WallpaperManager.HOME_SCREEN;
+        await WallpaperManager.setWallpaperFromFile(path, locationpath);
+      }
+      if (location == "lock") {
+        int locationpath = WallpaperManager.LOCK_SCREEN;
+        await WallpaperManager.setWallpaperFromFile(path, locationpath);
+      }
+      if (location == "both") {
+        int locationpath = WallpaperManager.BOTH_SCREEN;
+        await WallpaperManager.setWallpaperFromFile(path, locationpath);
+      }
+    } catch (e) {
+      Get.snackbar("set ${location}screen", "Faild",
+          snackPosition: SnackPosition.BOTTOM);
+    } finally {}
+  }
 
-  //     if (response.statusCode == 200) {
-  //       var respnsebody = response.body;
-  //       var document = parser.parse(respnsebody);
-  //       var news = document
-  //           .getElementsByClassName("listingResults news")[0]
-  //           .getElementsByClassName("listingResult small")
-  //           .forEach((element) {
-  //         String time = element.children[0].children[0].children[1].children[0]
-  //             .children[1].children[1].attributes["datetime"]
-  //             .toString();
-  //         techradar.add(Techradarnews(
-  //             title: element.children[0].children[0].children[1].children[0]
-  //                 .children[0].text
-  //                 .toString(),
-  //             link: element.children[0].attributes["href"].toString(),
-  //             time: DateTime.parse(time),
-  //             website: 'techradar'));
-  //       });
-  //     }
+  Future cachwallpaper(String url) async {
+    try {
+      return await DefaultCacheManager().getSingleFile(url);
+    } catch (e) {
+      print("faild");
+    } finally {}
+  }
 
-  //   } catch (exception) {
-  //     print(exception);
-  //   } finally {}
-  // }
-
+  Future downloadwallpaper(String url) async {
+    try {
+      await GallerySaver.saveImage(url, albumName: "Wallpapers");
+      Get.snackbar("Download", "Done",
+          snackPosition: SnackPosition.BOTTOM,
+          duration: const Duration(milliseconds: 800));
+    } catch (e) {
+      Get.snackbar("Download", "Faild", snackPosition: SnackPosition.BOTTOM);
+    } finally {}
+  }
 }

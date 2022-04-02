@@ -2,11 +2,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutterproject2/model/ad_helper.dart';
-
+import 'package:flutterproject2/model/wallpaper_model.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:get/get.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../controller/wallpapercontroller.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
 ScrollController scrollController = Get.find();
@@ -100,10 +102,11 @@ class MainPage extends StatelessWidget {
                     child: GridView.builder(
                       gridDelegate:
                           const SliverGridDelegateWithMaxCrossAxisExtent(
-                              maxCrossAxisExtent: 100,
-                               childAspectRatio:  1/2,
-                              crossAxisSpacing: 20,
-                              mainAxisSpacing: 0),
+                        maxCrossAxisExtent: 100,
+                        mainAxisExtent: 210,
+                        childAspectRatio: 1 / 2,
+                        crossAxisSpacing: 20,
+                      ),
                       controller: scrollController,
                       physics: const BouncingScrollPhysics(),
                       itemCount: controller.currentmax + controller.indecator(),
@@ -137,19 +140,31 @@ class MainPage extends StatelessWidget {
                                         ));
                                   }
                                 },
-                                
                                 child: Column(
                                   children: [
                                     SizedBox(
-                                        height: 210,
+                                        height: 205,
+                                        width: 150,
                                         child: AspectRatio(
                                           aspectRatio: 1,
                                           child: Hero(
-                                            
                                             tag: index,
-                                            child: Image.network(
-                                              "${controller.alldata[index].thumblink}",
-                                              fit: BoxFit.scaleDown,
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                              child: Image.network(
+                                                "${controller.alldata[index].thumblink}",
+                                                loadingBuilder: (context, child,
+                                                    loadingProgress) {
+                                                  if (loadingProgress == null) {
+                                                    return child;
+                                                  } else {
+                                                    return const Center(child: CircularProgressIndicator(),);
+                                                  }
+                                                },
+                                                fit: BoxFit.cover,
+                                                alignment: Alignment.topCenter,
+                                              ),
                                             ),
                                           ),
                                         )),
@@ -175,27 +190,87 @@ class Fullimagescreen extends StatelessWidget {
           centerTitle: true,
         ),
         body: GetBuilder<Newscontroller>(
-            builder: (controller) => Column(
-              children: [
-                SizedBox(
-                    height: 500,
-                    width: double.infinity,
-                    child: Hero(
-                        tag: index,
-                        child: controller.isimageready
-                            ? controller.fullimagesize
-                            : Image.network(
-                                "${controller.alldata[index].thumblink}",
-                                fit: BoxFit.cover,
-                              ))),
-                              Row(mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                ElevatedButton.icon(onPressed: (){}, icon: const Icon(Icons.download), label:const Text("download")),
-                                const SizedBox(width: 50,),
-                                ElevatedButton.icon(onPressed: (){}, icon: const Icon(Icons.screen_share), label:const Text("set wallpaper"))
-                              ],)
-              ],
-              
-            )));
+            builder: (controller) => ListView(
+                  children: [
+                    Column(
+                      children: [
+                        SizedBox(
+                            height: 500,
+                            width: double.infinity,
+                            child: Hero(
+                                tag: index,
+                                child: controller.isimageready
+                                    ? controller.fullimagesize
+                                    : Image.network(
+                                        "${controller.alldata[index].thumblink}",
+                                       
+                                        fit: BoxFit.cover,
+                                      ))),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ElevatedButton.icon(
+                                onPressed: () {
+                                  controller.downloadwallpaper(
+                                      controller.alldata[index].fulllink);
+                                },
+                                icon: const Icon(Icons.download),
+                                label: const Text("download")),
+                            const SizedBox(
+                              width: 50,
+                            ),
+                            ElevatedButton.icon(
+                                onPressed: () {
+                                  showModalBottomSheet(
+                                      context: context,
+                                      builder: (context) => SizedBox(
+                                            height: Get.height * 0.3,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.stretch,
+                                              mainAxisSize: MainAxisSize.max,
+                                              children: [
+                                                ElevatedButton(
+                                                    onPressed: () {
+                                                      controller.setscreen(
+                                                          controller
+                                                              .alldata[index]
+                                                              .fulllink,
+                                                          "home");
+                                                    },
+                                                    child: const Text(
+                                                        "HomeScreen")),
+                                                ElevatedButton(
+                                                    onPressed: () {
+                                                      controller.setscreen(
+                                                          controller
+                                                              .alldata[index]
+                                                              .fulllink,
+                                                          "lock");
+                                                    },
+                                                    child: const Text(
+                                                        "LockScreen")),
+                                                ElevatedButton(
+                                                    onPressed: () {
+                                                      controller.setscreen(
+                                                          controller
+                                                              .alldata[index]
+                                                              .fulllink,
+                                                          "both");
+                                                    },
+                                                    child: const Text(
+                                                        "BothScreen"))
+                                              ],
+                                            ),
+                                          ));
+                                },
+                                icon: const Icon(Icons.screen_share),
+                                label: const Text("set wallpaper"))
+                          ],
+                        )
+                      ],
+                    )
+                  ],
+                )));
   }
 }
