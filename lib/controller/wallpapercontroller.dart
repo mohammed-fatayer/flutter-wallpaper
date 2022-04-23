@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cache_manager/file.dart';
-import 'package:flutter_wallpaper_manager/flutter_wallpaper_manager.dart';
 import 'package:flutterproject2/model/ad_helper.dart';
 import 'package:flutterproject2/model/wallpaper_model.dart';
 import 'package:flutterproject2/view/mainpage.dart';
@@ -11,11 +10,16 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:html/parser.dart' as parser;
-import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:gallery_saver/gallery_saver.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_wallpaper_manager/flutter_wallpaper_manager.dart';
 import 'dart:convert' as io;
+import 'package:dio/dio.dart';
 
 class Newscontroller extends GetxController {
   late List<Wallpaper1> wallpaperlist;
@@ -23,14 +27,16 @@ class Newscontroller extends GetxController {
   late InterstitialAd rewardad;
   late BannerAd bannerad;
   List alldata = [];
-  int currentmax = 23;
+  late int currentmax = alldata.length;
   bool bol2 = false;
   bool videoisadready = false;
-  bool bannerisready = false;
+  bool bannerisready = true;
   int selectedindex = 0;
   late Image fullimagesize;
   bool isimageready = false;
   Random random = Random();
+  bool isLoadMoreRunning = false;
+  int aviable = 1;
   final _key = GlobalKey();
 
   ScrollController scrollController = Get.find();
@@ -40,15 +46,18 @@ class Newscontroller extends GetxController {
     // TODO: implement onInit
     Adhelper.getInterstitialad();
     bannerad = Adhelper.getbanerad();
+
     neWwallpaper();
 
     if (box.read("darktheme") != null) {
       bol2 = box.read("darktheme");
     }
-    scrollController.addListener(() {
-      if (scrollController.position.pixels ==
-          scrollController.position.maxScrollExtent) {
-        newdata();
+    scrollController.addListener(() async {
+      if (scrollController.position.pixels >
+          scrollController.position.maxScrollExtent * 0.30) {
+        WidgetsBinding.instance?.addPostFrameCallback((_) async {
+          await newdata();
+        });
       }
     });
     super.onInit();
@@ -85,6 +94,7 @@ class Newscontroller extends GetxController {
           return child;
         } else {
           return const Center(
+            heightFactor: 15,
             child: CircularProgressIndicator(),
           );
         }
@@ -110,42 +120,38 @@ class Newscontroller extends GetxController {
     update();
   }
 
-  void newdata() async {
-    WidgetsBinding.instance?.addPostFrameCallback((_) async {
-      await neWwallpaper();
-      if (currentmax == alldata.length) {
-        Get.snackbar("Loading ", "no more wallpaper",
-            snackPosition: SnackPosition.BOTTOM);
-      } else {
-        currentmax = currentmax + wallpaperlist.length;
-        currentmax >= alldata.length ? currentmax = alldata.length : currentmax;
+  Future newdata() async {
+    if (aviable == 1) {
+      aviable = 0;
+      WidgetsBinding.instance?.addPostFrameCallback((_) async {
+        await neWwallpaper();
 
-        update();
-      }
-    });
-  }
+        if (currentmax == alldata.length) {
+          Get.snackbar("Loading ", "no more wallpaper",
+              snackPosition: SnackPosition.BOTTOM);
+        } else {
+          currentmax = currentmax + wallpaperlist.length;
+          currentmax >= alldata.length
+              ? currentmax = alldata.length
+              : currentmax;
 
-  void openurl(index) async {
-    var url1 = alldata[index].fulllink;
-    if (await canLaunch(url1.toString())) {
-      await launch(url1.toString(), forceWebView: true);
-    } else {
-      throw 'Could not launch $url1';
+          update();
+          aviable = 1;
+        }
+      });
     }
   }
 
   Future neWwallpaper() async {
-    await wallpaper();
+    await _wallpaper();
 
     alldata.addAll(wallpaperlist);
-    // alldata.addAll(techradar);
-
-    // alldata.sort((a, b) => b.time.compareTo(a.time));
+    isLoadMoreRunning = false;
     update();
   }
 
   Future onrefresh() async {
-    await wallpaper();
+    await _wallpaper();
 
     alldata.replaceRange(0, alldata.length, wallpaperlist);
     currentmax = alldata.length;
@@ -153,59 +159,57 @@ class Newscontroller extends GetxController {
     update();
   }
 
-  Future wallpaper() async {
+  Future _wallpaper() async {
     wallpaperlist = [];
-    int pagenumber = random.nextInt(3500);
+    late int _maximages;
+    CollectionReference _note =
+        FirebaseFirestore.instance.collection('maximages');
+    await _note
+        .doc("FexINAwsq1wXNprktbCI")
+        .get()
+        .then((DocumentSnapshot documentSnapshot) {
+      _maximages = documentSnapshot["maximages"];
+    });
 
-    try {
-      Uri url = Uri.parse(
-          "https://mobile.alphacoders.com/by-category/3?page=$pagenumber");
-      final response = await http.get(url);
+    final storageRef = FirebaseStorage.instance.ref();
+    isLoadMoreRunning = true;
 
-      if (response.statusCode == 200) {
-        var respnsebody = response.body;
-        var document = parser.parse(respnsebody);
-        var news = document
-            .getElementsByClassName("container-masonry")[0]
-            .getElementsByClassName("item")
-            .forEach((element) {
-          String image =
-              element.children[0].children[0].attributes["src"].toString();
-          String image2 = image.replaceAll("thumb-", "");
-          String imagesize =
-              element.children[0].children[0].attributes["style"].toString();
-          imagesize = imagesize.replaceAll("height:", "");
-          imagesize = imagesize.replaceAll("px;", "");
-          int height = int.parse(imagesize);
+// Create a reference with an initial file path and name
+    for (var i = 0; i < 24; i++) {
+      try {
+        int num = random.nextInt(_maximages);
+        final pathReference = storageRef.child("thumbnails/$num.jpg");
+        final url = await pathReference.getDownloadURL();
 
-          wallpaperlist.add(Wallpaper1(
-              thumblink:
-                  element.children[0].children[0].attributes["src"].toString(),
-              fulllink: image2));
+        String fullurl = url.toString();
+        fullurl = fullurl.replaceAll("thumbnails", "wallpapers");
 
-          if (height < 300) {
-            wallpaperlist.removeLast();
-            print(height);
-          }
-        });
-        if (wallpaperlist.length <= 15) {
-          await neWwallpaper();
-          
-        
-        }
-      }
-      print(wallpaperlist.length);
-    } catch (exception) {
-      print(exception);
-    } finally {}
+        wallpaperlist.add(Wallpaper1(
+            thumblink: url, fulllink: fullurl, name: pathReference.name));
+      } catch (e) {
+        print("not found ============================================");
+      } finally {}
+    }
+  }
+
+  Future showvideo() async {
+    rewardad.show();
+    rewardad.fullScreenContentCallback =
+        FullScreenContentCallback(onAdDismissedFullScreenContent: (ad) async {
+      rewardad.dispose();
+      videoisadready = false;
+      Adhelper.getInterstitialad();
+      Future.delayed(const Duration(seconds: 1));
+    });
   }
 
   Future setscreen(String url, String location) async {
     var filepath = await cachwallpaper(url);
     await bothscreenmethod(filepath.path, location);
-    Get.snackbar("set ${location}screen", "done",
+    Get.snackbar("set ${location}", "Done",
+        maxWidth: double.infinity,
         snackPosition: SnackPosition.BOTTOM,
-        duration: const Duration(milliseconds: 800));
+        duration: const Duration(milliseconds: 600));
   }
 
   Future bothscreenmethod(String path, String location) async {
@@ -216,6 +220,7 @@ class Newscontroller extends GetxController {
       }
       if (location == "lock") {
         int locationpath = WallpaperManager.LOCK_SCREEN;
+
         await WallpaperManager.setWallpaperFromFile(path, locationpath);
       }
       if (location == "both") {
@@ -223,7 +228,7 @@ class Newscontroller extends GetxController {
         await WallpaperManager.setWallpaperFromFile(path, locationpath);
       }
     } catch (e) {
-      Get.snackbar("set ${location}screen", "Faild",
+      Get.snackbar("set ${location}", "Faild",
           snackPosition: SnackPosition.BOTTOM);
     } finally {}
   }
@@ -236,9 +241,12 @@ class Newscontroller extends GetxController {
     } finally {}
   }
 
-  Future downloadwallpaper(String url) async {
+  Future downloadwallpaper(String url, String name) async {
     try {
-      await GallerySaver.saveImage(url, albumName: "Wallpapers");
+      final temp = await getTemporaryDirectory();
+      final path = "${temp.path}/$name";
+      await Dio().download(url, path);
+      await GallerySaver.saveImage(path, albumName: "Wallpapers");
       Get.snackbar("Download", "Done",
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(milliseconds: 800));
