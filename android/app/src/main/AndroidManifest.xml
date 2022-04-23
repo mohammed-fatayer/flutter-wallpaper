@@ -6,7 +6,7 @@
          <uses-permission android:name="android.permission.VIBRATE" />
          <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
    <application
-        android:label="over 9000 anime wallpaper"
+        android:label="Anime Wallpaper:over 9000 anime wallpapers"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         
@@ -42,7 +42,7 @@
             <!-- 
                 ca-app-pub-3940256099942544~3347511713   test
 
-                ca-app-pub-2675606651389917~9378783102   real
+                ca-app-pub-2675606651389917~6010961691   real
              -->
             
     
