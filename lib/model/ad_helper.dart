@@ -1,23 +1,23 @@
 import 'dart:convert';
-
+import 'package:get/get.dart';
 import 'package:flutterproject2/view/mainpage.dart';
+import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'dart:io';
 
 class Adhelper {
-  bool testmood = true;
-  bool nativeadloaded = false;
-
   static BannerAd getbanerad() {
     return BannerAd(
-        size: AdSize.banner,
+        size: Get.width <= 468 ? AdSize.banner : AdSize.fullBanner,
         adUnitId: "ca-app-pub-3940256099942544/6300978111",
         // ca-app-pub-3940256099942544/6300978111    test
-        // ca-app-pub-2675606651389917/8572530529    real
+        // ca-app-pub-2675606651389917/1119643385    real
         listener: BannerAdListener(onAdLoaded: (ad) {
           controller.bannerisready = true;
+        
         }, onAdFailedToLoad: (ad, error) {
           print("faild to load banner ad${error.message}");
+          
           controller.bannerisready = false;
           ad.dispose();
         }),
@@ -30,7 +30,7 @@ class Adhelper {
       InterstitialAd.load(
         adUnitId: "ca-app-pub-3940256099942544/1033173712",
         //ca-app-pub-3940256099942544/1033173712     test
-        //ca-app-pub-2675606651389917/5248702490     real
+        //ca-app-pub-2675606651389917/3569998160     real
         request: const AdRequest(),
         adLoadCallback: InterstitialAdLoadCallback(onAdLoaded: (ad) {
           controller.rewardad = ad;
