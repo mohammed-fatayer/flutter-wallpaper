@@ -2,22 +2,18 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutterproject2/model/ad_helper.dart';
-import 'package:flutterproject2/model/wallpaper_model.dart';
-import 'package:gallery_saver/gallery_saver.dart';
 import 'package:get/get.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../controller/wallpapercontroller.dart';
-import 'package:gallery_saver/gallery_saver.dart';
+import 'package:store_redirect/store_redirect.dart';
 
 ScrollController scrollController = Get.find();
 Newscontroller controller = Get.find();
 
 class MainPage extends StatelessWidget {
-  MainPage({Key? key}) : super(key: key);
+  const MainPage({Key? key}) : super(key: key);
 
-  int selectedindex = 0;
+  // int selectedindex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +24,10 @@ class MainPage extends StatelessWidget {
         ),
         bottomNavigationBar: BottomAppBar(
           child: controller.bannerisready
-              ? SizedBox(height: 60,width: Get.width, child: AdWidget(ad: controller.bannerad))
+              ? SizedBox(
+                  height: 60,
+                  width: Get.width,
+                  child: AdWidget(ad: controller.bannerad))
               : const SizedBox(),
         ),
         drawer: Drawer(
@@ -50,6 +49,13 @@ class MainPage extends StatelessWidget {
                     onChanged: (val) {
                       controller.theme(val);
                     }),
+                ListTile(
+                  title: const Text("Rate App"),
+                  leading: const Icon(Icons.star),
+                  onTap: () {
+                    StoreRedirect.redirect(androidAppId: "com.leos.anime_wallpaper");
+                  },
+                )
                 // ListTile(
                 //     title: const Text("home page"),
                 //     leading: const Icon(Icons.home),
@@ -180,36 +186,32 @@ class Fullimagescreen extends StatelessWidget {
         body: GetBuilder<Newscontroller>(
             builder: (controller) => Stack(
                   children: [
-                   
-                    
-                       SizedBox(
-                         height: Get.height,
-                         child: ListView(
-                           shrinkWrap: true,
-                          
-                          children: [
-                            Hero(
-                              tag: index,
-                              child: controller.isimageready
-                                  ? controller.fullimagesize
-                                  : CachedNetworkImage(
-                                      imageUrl:
-                                          "${controller.alldata[index].thumblink}",
-                                      placeholder: (context, url) =>
-                                          const CircularProgressIndicator(),
-                                      fit: BoxFit.cover,
-                                      alignment: Alignment.topCenter,
-                                    ),
-                            )
-                          ],
-                                             ),
-                       ),
-                 
+                    SizedBox(
+                      height: Get.height,
+                      child: ListView(
+                        shrinkWrap: true,
+                        children: [
+                          Hero(
+                            tag: index,
+                            child: controller.isimageready
+                                ? controller.fullimagesize
+                                : CachedNetworkImage(
+                                    imageUrl:
+                                        "${controller.alldata[index].thumblink}",
+                                    placeholder: (context, url) =>
+                                        const CircularProgressIndicator(),
+                                    fit: BoxFit.cover,
+                                    alignment: Alignment.topCenter,
+                                  ),
+                          )
+                        ],
+                      ),
+                    ),
                     Positioned(
                       bottom: 30,
                       left: 5,
                       child: FloatingActionButton.extended(
-                        heroTag: "btn1",
+                          heroTag: "btn1",
                           onPressed: () {
                             int max = Random().nextInt(2);
                             if (controller.videoisadready && max == 1) {
@@ -227,77 +229,65 @@ class Fullimagescreen extends StatelessWidget {
                       bottom: 30,
                       right: 5,
                       child: FloatingActionButton.extended(
-                            heroTag: "btn2",
-                              onPressed: () {
-                                showModalBottomSheet(
-                                    context: context,
-                                    builder: (context) => SizedBox(
-                                          height: 150,
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.stretch,
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: [
-                                              ElevatedButton(
-                                                  onPressed: () {
-                                                    int max =
-                                                        Random().nextInt(2);
-                                                    if (controller
-                                                            .videoisadready &&
-                                                        max == 1) {
-                                                      controller.showvideo();
-                                                    } else {
-                                                      controller.setscreen(
-                                                          controller
-                                                              .alldata[index]
-                                                              .fulllink,
-                                                          "home");
-                                                    }
-                                                  },
-                                                  child: const Text(
-                                                      "HomeScreen")),
-                                              ElevatedButton(
-                                                  onPressed: () {
-                                                    int max =
-                                                        Random().nextInt(2);
-                                                    if (controller
-                                                            .videoisadready &&
-                                                        max == 1) {
-                                                      controller.showvideo();
-                                                    } else {
-                                                      controller.setscreen(
-                                                          controller
-                                                              .alldata[index]
-                                                              .fulllink,
-                                                          "lock");
-                                                    }
-                                                  },
-                                                  child: const Text(
-                                                      "LockScreen")),
-                                              ElevatedButton(
-                                                  onPressed: () {
-                                                    int max =
-                                                        Random().nextInt(2);
-                                                    if (controller
-                                                            .videoisadready &&
-                                                        max == 1) {
-                                                      controller.showvideo();
-                                                    } else {
-                                                      controller.setscreen(
-                                                          controller
-                                                              .alldata[index]
-                                                              .fulllink,
-                                                          "both");
-                                                    }
-                                                  },
-                                                  child: const Text(
-                                                      "BothScreens"))
-                                            ],
-                                          ),
-                                        ));
-                              },
-                              icon: const Icon(Icons.screen_share),
-                              label: const Text("set wallpaper")),
+                          heroTag: "btn2",
+                          onPressed: () {
+                            showModalBottomSheet(
+                                context: context,
+                                builder: (context) => SizedBox(
+                                      height: 150,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        mainAxisSize: MainAxisSize.max,
+                                        children: [
+                                          ElevatedButton(
+                                              onPressed: () {
+                                                int max = Random().nextInt(2);
+                                                if (controller.videoisadready &&
+                                                    max == 1) {
+                                                  controller.showvideo();
+                                                } else {
+                                                  controller.setscreen(
+                                                      controller.alldata[index]
+                                                          .fulllink,
+                                                      "home");
+                                                }
+                                              },
+                                              child: const Text("HomeScreen")),
+                                          ElevatedButton(
+                                              onPressed: () {
+                                                int max = Random().nextInt(2);
+                                                if (controller.videoisadready &&
+                                                    max == 1) {
+                                                  controller.showvideo();
+                                                } else {
+                                                  controller.setscreen(
+                                                      controller.alldata[index]
+                                                          .fulllink,
+                                                      "lock");
+                                                }
+                                              },
+                                              child: const Text("LockScreen")),
+                                          ElevatedButton(
+                                              onPressed: () {
+                                                int max = Random().nextInt(2);
+                                                if (controller.videoisadready &&
+                                                    max == 1) {
+                                                  controller.showvideo();
+                                                } else {
+                                                  controller.setscreen(
+                                                      controller.alldata[index]
+                                                          .fulllink,
+                                                      "both");
+                                                }
+                                              },
+                                              child: const Text("BothScreens"))
+                                        ],
+                                      ),
+                                    ));
+                          },
+                          icon: const Icon(Icons.screen_share),
+                          label: const Text("set wallpaper")),
                     )
                   ],
                 )));

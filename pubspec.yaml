@@ -50,6 +50,8 @@ dependencies:
   firebase_analytics: ^9.1.6
   firebase_performance: ^0.8.0+10
   firebase_crashlytics: ^2.6.3
+  firebase_messaging: ^11.2.14
+  store_redirect: ^2.0.1
   
   
 
