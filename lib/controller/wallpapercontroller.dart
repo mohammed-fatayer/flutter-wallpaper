@@ -1,24 +1,20 @@
 import 'dart:math';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_cache_manager/file.dart';
 import 'package:flutterproject2/model/ad_helper.dart';
 import 'package:flutterproject2/model/wallpaper_model.dart';
 import 'package:flutterproject2/view/mainpage.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:http/http.dart' as http;
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:store_redirect/store_redirect.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_wallpaper_manager/flutter_wallpaper_manager.dart';
-import 'dart:convert' as io;
 import 'package:dio/dio.dart';
 
 class Newscontroller extends GetxController {
@@ -37,21 +33,26 @@ class Newscontroller extends GetxController {
   Random random = Random();
   bool isLoadMoreRunning = false;
   int aviable = 1;
-  final _key = GlobalKey();
-
+  final fbm = FirebaseMessaging.instance;
   ScrollController scrollController = Get.find();
   GetStorage box = GetStorage();
   @override
   void onInit() async {
-    // TODO: implement onInit
     Adhelper.getInterstitialad();
     bannerad = Adhelper.getbanerad();
+    fbm.getToken().then((value) {
+      print(value);
+    });
 
     neWwallpaper();
 
+     await firebasenotifi();
+     
     if (box.read("darktheme") != null) {
       bol2 = box.read("darktheme");
     }
+
+     
     scrollController.addListener(() async {
       if (scrollController.position.pixels >
           scrollController.position.maxScrollExtent * 0.30) {
@@ -77,6 +78,15 @@ class Newscontroller extends GetxController {
   //     bannermap[index];
   //   }
   // }
+  Future firebasenotifi() async {
+    var _message = await FirebaseMessaging.instance.getInitialMessage();
+    if (_message != null && _message.notification?.title == "Rate us") {
+      StoreRedirect.redirect(androidAppId: "com.leos.anime_wallpaper");
+    }
+    else{
+      Adhelper.getappopenad();
+    }
+  }
 
   void navigationbar(index) {
     selectedindex = index;
@@ -187,7 +197,7 @@ class Newscontroller extends GetxController {
         wallpaperlist.add(Wallpaper1(
             thumblink: url, fulllink: fullurl, name: pathReference.name));
       } catch (e) {
-        print("not found ============================================");
+        // print("not found ============================================");
       } finally {}
     }
   }
@@ -206,7 +216,7 @@ class Newscontroller extends GetxController {
   Future setscreen(String url, String location) async {
     var filepath = await cachwallpaper(url);
     await bothscreenmethod(filepath.path, location);
-    Get.snackbar("set ${location}", "Done",
+    Get.snackbar("set $location", "Done",
         maxWidth: double.infinity,
         snackPosition: SnackPosition.BOTTOM,
         duration: const Duration(milliseconds: 600));
@@ -228,7 +238,7 @@ class Newscontroller extends GetxController {
         await WallpaperManager.setWallpaperFromFile(path, locationpath);
       }
     } catch (e) {
-      Get.snackbar("set ${location}", "Faild",
+      Get.snackbar("set $location", "Faild",
           snackPosition: SnackPosition.BOTTOM);
     } finally {}
   }
@@ -237,7 +247,7 @@ class Newscontroller extends GetxController {
     try {
       return await DefaultCacheManager().getSingleFile(url);
     } catch (e) {
-      print("faild");
+      // print("faild");
     } finally {}
   }
 

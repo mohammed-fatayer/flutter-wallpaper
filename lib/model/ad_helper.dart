@@ -1,11 +1,10 @@
-import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:flutterproject2/view/mainpage.dart';
-import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'dart:io';
 
 class Adhelper {
+  
   static BannerAd getbanerad() {
     return BannerAd(
         size: Get.width <= 468 ? AdSize.banner : AdSize.fullBanner,
@@ -14,10 +13,9 @@ class Adhelper {
         // ca-app-pub-2675606651389917/1119643385    real
         listener: BannerAdListener(onAdLoaded: (ad) {
           controller.bannerisready = true;
-        
         }, onAdFailedToLoad: (ad, error) {
-          print("faild to load banner ad${error.message}");
-          
+          // print("faild to load banner ad${error.message}");
+
           controller.bannerisready = false;
           ad.dispose();
         }),
@@ -37,11 +35,33 @@ class Adhelper {
 
           controller.videoisadready = true;
         }, onAdFailedToLoad: (LoadAdError error) {
-          print("faild to load Interstitial ad${error.message}");
+          // print("faild to load Interstitial ad${error.message}");
 
           throw UnsupportedError("faild");
         }),
       );
+    } else {
+      throw UnsupportedError("not andriod");
+    }
+  }
+
+  static getappopenad() async {
+    AppOpenAd? openad;
+    if (Platform.isAndroid) {
+      await AppOpenAd.load(
+          adUnitId: 'ca-app-pub-3940256099942544/3419835294',
+
+          //  ca-app-pub-2675606651389917/3656458183  real
+          //  ca-app-pub-3940256099942544/3419835294  test
+
+          request: const AdRequest(),
+          adLoadCallback: AppOpenAdLoadCallback(onAdLoaded: ((ad) {
+            openad = ad;
+            openad!.show();
+          }), onAdFailedToLoad: (LoadAdError error) {
+            // print(error);
+          }),
+          orientation: AppOpenAd.orientationPortrait);
     } else {
       throw UnsupportedError("not andriod");
     }
