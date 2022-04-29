@@ -8,5 +8,6 @@ class MyBinding extends Bindings {
   void dependencies() {
     Get.lazyPut(() =>Newscontroller());
     Get.lazyPut(() =>ScrollController());
+
   }
 }
