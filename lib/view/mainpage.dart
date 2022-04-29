@@ -7,6 +7,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../controller/wallpapercontroller.dart';
 import 'package:store_redirect/store_redirect.dart';
 
+
 ScrollController scrollController = Get.find();
 Newscontroller controller = Get.find();
 
@@ -213,14 +214,11 @@ class Fullimagescreen extends StatelessWidget {
                       child: FloatingActionButton.extended(
                           heroTag: "btn1",
                           onPressed: () {
-                            int max = Random().nextInt(2);
-                            if (controller.videoisadready && max == 1) {
-                              controller.showvideo();
-                            } else {
+                          
                               controller.downloadwallpaper(
                                   controller.alldata[index].fulllink,
                                   controller.alldata[index].name);
-                            }
+                          
                           },
                           icon: const Icon(Icons.download),
                           label: const Text("download")),
@@ -242,44 +240,33 @@ class Fullimagescreen extends StatelessWidget {
                                         children: [
                                           ElevatedButton(
                                               onPressed: () {
-                                                int max = Random().nextInt(2);
-                                                if (controller.videoisadready &&
-                                                    max == 1) {
-                                                  controller.showvideo();
-                                                } else {
+                                                
                                                   controller.setscreen(
                                                       controller.alldata[index]
                                                           .fulllink,
                                                       "home");
-                                                }
+                                               
                                               },
                                               child: const Text("HomeScreen")),
                                           ElevatedButton(
                                               onPressed: () {
-                                                int max = Random().nextInt(2);
-                                                if (controller.videoisadready &&
-                                                    max == 1) {
-                                                  controller.showvideo();
-                                                } else {
+                                             
                                                   controller.setscreen(
                                                       controller.alldata[index]
                                                           .fulllink,
                                                       "lock");
-                                                }
+                                               
                                               },
                                               child: const Text("LockScreen")),
                                           ElevatedButton(
                                               onPressed: () {
-                                                int max = Random().nextInt(2);
-                                                if (controller.videoisadready &&
-                                                    max == 1) {
-                                                  controller.showvideo();
-                                                } else {
+                                               
+                                             
                                                   controller.setscreen(
                                                       controller.alldata[index]
                                                           .fulllink,
                                                       "both");
-                                                }
+                                               
                                               },
                                               child: const Text("BothScreens"))
                                         ],

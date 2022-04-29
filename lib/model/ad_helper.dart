@@ -4,7 +4,6 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'dart:io';
 
 class Adhelper {
-  
   static BannerAd getbanerad() {
     return BannerAd(
         size: Get.width <= 468 ? AdSize.banner : AdSize.fullBanner,
@@ -51,8 +50,8 @@ class Adhelper {
       await AppOpenAd.load(
           adUnitId: 'ca-app-pub-3940256099942544/3419835294',
 
-          //  ca-app-pub-2675606651389917/3656458183  real
           //  ca-app-pub-3940256099942544/3419835294  test
+          //  ca-app-pub-2675606651389917/3656458183  real
 
           request: const AdRequest(),
           adLoadCallback: AppOpenAdLoadCallback(onAdLoaded: ((ad) {

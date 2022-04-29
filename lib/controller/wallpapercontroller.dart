@@ -40,19 +40,18 @@ class Newscontroller extends GetxController {
   void onInit() async {
     Adhelper.getInterstitialad();
     bannerad = Adhelper.getbanerad();
-    fbm.getToken().then((value) {
-      print(value);
-    });
+    // fbm.getToken().then((value) {
+    //   print(value);
+    // });
 
     neWwallpaper();
 
-     await firebasenotifi();
-     
+    await firebasenotifi();
+
     if (box.read("darktheme") != null) {
       bol2 = box.read("darktheme");
     }
 
-     
     scrollController.addListener(() async {
       if (scrollController.position.pixels >
           scrollController.position.maxScrollExtent * 0.30) {
@@ -82,9 +81,6 @@ class Newscontroller extends GetxController {
     var _message = await FirebaseMessaging.instance.getInitialMessage();
     if (_message != null && _message.notification?.title == "Rate us") {
       StoreRedirect.redirect(androidAppId: "com.leos.anime_wallpaper");
-    }
-    else{
-      Adhelper.getappopenad();
     }
   }
 

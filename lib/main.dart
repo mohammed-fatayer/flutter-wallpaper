@@ -8,6 +8,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutterproject2/model/ad_helper.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutterproject2/controller/updatecontroller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,8 +17,9 @@ void main() async {
   await Firebase.initializeApp();
   FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
   FirebaseAnalyticsObserver(analytics: _analytics);
-  Adhelper.getbanerad();
-  
+  await PlaystoreUpdate.checkForUpdate();
+  // Adhelper.getbanerad();
+
   await GetStorage.init();
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
   FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
@@ -34,13 +36,17 @@ class Myapp extends StatelessWidget {
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      initialBinding: MyBinding(),
-      home: const MainPage(),
       theme: bool1 == false ? ThemeData.dark() : ThemeData.light(),
+      initialBinding: MyBinding(),
+      initialRoute: "/mainpage",
       getPages: [
         GetPage(
           name: "/about",
           page: () => const Myapp(),
+        ),
+        GetPage(
+          name: "/mainpage",
+          page: () => const MainPage(),
         )
       ],
     );
