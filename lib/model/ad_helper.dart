@@ -7,7 +7,7 @@ class Adhelper {
   static BannerAd getbanerad() {
     return BannerAd(
         size: Get.width <= 468 ? AdSize.banner : AdSize.fullBanner,
-        adUnitId: "ca-app-pub-3940256099942544/6300978111",
+        adUnitId: "ca-app-pub-2675606651389917/1119643385",
         // ca-app-pub-3940256099942544/6300978111    test
         // ca-app-pub-2675606651389917/1119643385    real
         listener: BannerAdListener(onAdLoaded: (ad) {
@@ -25,7 +25,7 @@ class Adhelper {
   static getInterstitialad() {
     if (Platform.isAndroid) {
       InterstitialAd.load(
-        adUnitId: "ca-app-pub-3940256099942544/1033173712",
+        adUnitId: "ca-app-pub-2675606651389917/3569998160",
         //ca-app-pub-3940256099942544/1033173712     test
         //ca-app-pub-2675606651389917/3569998160     real
         request: const AdRequest(),
@@ -48,7 +48,7 @@ class Adhelper {
     AppOpenAd? openad;
     if (Platform.isAndroid) {
       await AppOpenAd.load(
-          adUnitId: 'ca-app-pub-3940256099942544/3419835294',
+          adUnitId: 'ca-app-pub-2675606651389917/3656458183',
 
           //  ca-app-pub-3940256099942544/3419835294  test
           //  ca-app-pub-2675606651389917/3656458183  real
