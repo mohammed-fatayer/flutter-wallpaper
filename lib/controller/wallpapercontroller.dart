@@ -10,7 +10,6 @@ import 'package:get_storage/get_storage.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:gallery_saver/gallery_saver.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:store_redirect/store_redirect.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -34,6 +33,7 @@ class Newscontroller extends GetxController {
   bool isLoadMoreRunning = false;
   int aviable = 1;
   final fbm = FirebaseMessaging.instance;
+
   ScrollController scrollController = Get.find();
   GetStorage box = GetStorage();
   @override
@@ -51,10 +51,11 @@ class Newscontroller extends GetxController {
     if (box.read("darktheme") != null) {
       bol2 = box.read("darktheme");
     }
+    checklunchnumber();
 
     scrollController.addListener(() async {
       if (scrollController.position.pixels >
-          scrollController.position.maxScrollExtent * 0.30) {
+          scrollController.position.maxScrollExtent * 0.9) {
         WidgetsBinding.instance?.addPostFrameCallback((_) async {
           await newdata();
         });
@@ -77,6 +78,74 @@ class Newscontroller extends GetxController {
   //     bannermap[index];
   //   }
   // }
+  void checklunchnumber() {
+    String didreview = box.read("didreview") ?? "no";
+
+    int lunchcount = box.read("lunchcount") ?? 0;
+    if (didreview == "no") {
+      if (lunchcount == 1) {
+        rateapp();
+      }
+      if (lunchcount % 4 == 0 && lunchcount != 0) {
+        rateapp();
+      }
+
+      box.write("lunchcount", lunchcount + 1);
+    }
+  }
+
+  void rateapp() {
+    String textvalue = "no review";
+    Get.defaultDialog(
+      title: "rate app ",
+      middleText: "would you rate our app 5 stars on google play",
+      textCancel: "No",
+      textConfirm: "Yes",
+      onConfirm: () {
+        Get.back();
+        StoreRedirect.redirect(androidAppId: "com.leos.anime_wallpaper");
+        box.write("didreview", "yes");
+      },
+      onCancel: () async {
+        Get.back();
+        Future.delayed(const Duration(milliseconds: 500), () {
+          Get.defaultDialog(
+              content: TextFormField(
+                validator: (text) {
+                  if (text!.isEmpty) {
+                    return "please write something";
+                  }
+                  return null;
+                },
+                decoration: const InputDecoration(
+                    labelText: "tell us how we can improve your experience",
+                    border: OutlineInputBorder()),
+                onChanged: (text) {
+                  textvalue = text;
+                },
+                autocorrect: true,
+
+                maxLines: 3,
+                maxLength: 50,
+                // expands: true,
+              ),
+              title: "tell us why",
+              middleText: "",
+              textConfirm: "Send",
+              onCancel: () {},
+              onConfirm: () {
+                CollectionReference _review =
+                    FirebaseFirestore.instance.collection('reviews');
+                _review.doc().set({"text": textvalue});
+                Get.back();
+              },
+              barrierDismissible: false);
+        });
+      },
+      barrierDismissible: false,
+    );
+  }
+
   Future firebasenotifi() async {
     var _message = await FirebaseMessaging.instance.getInitialMessage();
     if (_message != null && _message.notification?.title == "Rate us") {
@@ -168,8 +237,12 @@ class Newscontroller extends GetxController {
   Future _wallpaper() async {
     wallpaperlist = [];
     late int _maximages;
+    String fulllink;
+
     CollectionReference _note =
         FirebaseFirestore.instance.collection('maximages');
+    CollectionReference<Map> firestoreref =
+        FirebaseFirestore.instance.collection('wallpaper');
     await _note
         .doc("FexINAwsq1wXNprktbCI")
         .get()
@@ -177,25 +250,31 @@ class Newscontroller extends GetxController {
       _maximages = documentSnapshot["maximages"];
     });
 
-    final storageRef = FirebaseStorage.instance.ref();
+    // final storageRef = FirebaseStorage.instance.ref();
     isLoadMoreRunning = true;
 
 // Create a reference with an initial file path and name
-    for (var i = 0; i < 24; i++) {
-      try {
-        int num = random.nextInt(_maximages);
-        final pathReference = storageRef.child("thumbnails/$num.jpg");
-        final url = await pathReference.getDownloadURL();
 
-        String fullurl = url.toString();
-        fullurl = fullurl.replaceAll("thumbnails", "wallpapers");
+    try {
+      int range = random.nextInt(_maximages);
+      await firestoreref
+          .where("id", isGreaterThan: range, isLessThan: range + 25)
+          .get()
+          .then((value) => value.docs.forEach((element) {
+                fulllink = element.data()["thumbUrl"];
+                fulllink = fulllink.replaceAll("thumbnails", "wallpapers");
+                // print(element.data()["name"]);
+                // print("========================");
 
-        wallpaperlist.add(Wallpaper1(
-            thumblink: url, fulllink: fullurl, name: pathReference.name));
-      } catch (e) {
-        // print("not found ============================================");
-      } finally {}
-    }
+                wallpaperlist.add(Wallpaper1(
+                    thumblink: element.data()["thumbUrl"],
+                    fulllink: fulllink,
+                    name: element.data()["name"]));
+              }));
+      wallpaperlist.shuffle();
+    } catch (e) {
+      // print("not found ============================================");
+    } finally {}
   }
 
   Future showvideo() async {

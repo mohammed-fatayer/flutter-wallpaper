@@ -7,7 +7,6 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../controller/wallpapercontroller.dart';
 import 'package:store_redirect/store_redirect.dart';
 
-
 ScrollController scrollController = Get.find();
 Newscontroller controller = Get.find();
 
@@ -22,6 +21,14 @@ class MainPage extends StatelessWidget {
         appBar: AppBar(
           title: const Text("Wallpapers"),
           centerTitle: true,
+          actions: [
+            IconButton(
+                onPressed: () {
+                  StoreRedirect.redirect(
+                      androidAppId: "com.leos.anime_wallpaper");
+                },
+                icon: const Icon(Icons.star))
+          ],
         ),
         bottomNavigationBar: BottomAppBar(
           child: controller.bannerisready
@@ -54,7 +61,8 @@ class MainPage extends StatelessWidget {
                   title: const Text("Rate App"),
                   leading: const Icon(Icons.star),
                   onTap: () {
-                    StoreRedirect.redirect(androidAppId: "com.leos.anime_wallpaper");
+                    StoreRedirect.redirect(
+                        androidAppId: "com.leos.anime_wallpaper");
                   },
                 )
                 // ListTile(
@@ -183,6 +191,14 @@ class Fullimagescreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text("Wallpapers"),
           centerTitle: true,
+          actions: [
+            IconButton(
+                onPressed: () {
+                  StoreRedirect.redirect(
+                      androidAppId: "com.leos.anime_wallpaper");
+                },
+                icon: const Icon(Icons.star))
+          ],
         ),
         body: GetBuilder<Newscontroller>(
             builder: (controller) => Stack(
@@ -214,11 +230,9 @@ class Fullimagescreen extends StatelessWidget {
                       child: FloatingActionButton.extended(
                           heroTag: "btn1",
                           onPressed: () {
-                          
-                              controller.downloadwallpaper(
-                                  controller.alldata[index].fulllink,
-                                  controller.alldata[index].name);
-                          
+                            controller.downloadwallpaper(
+                                controller.alldata[index].fulllink,
+                                controller.alldata[index].name);
                           },
                           icon: const Icon(Icons.download),
                           label: const Text("download")),
@@ -240,33 +254,26 @@ class Fullimagescreen extends StatelessWidget {
                                         children: [
                                           ElevatedButton(
                                               onPressed: () {
-                                                
-                                                  controller.setscreen(
-                                                      controller.alldata[index]
-                                                          .fulllink,
-                                                      "home");
-                                               
+                                                controller.setscreen(
+                                                    controller.alldata[index]
+                                                        .fulllink,
+                                                    "home");
                                               },
                                               child: const Text("HomeScreen")),
                                           ElevatedButton(
                                               onPressed: () {
-                                             
-                                                  controller.setscreen(
-                                                      controller.alldata[index]
-                                                          .fulllink,
-                                                      "lock");
-                                               
+                                                controller.setscreen(
+                                                    controller.alldata[index]
+                                                        .fulllink,
+                                                    "lock");
                                               },
                                               child: const Text("LockScreen")),
                                           ElevatedButton(
                                               onPressed: () {
-                                               
-                                             
-                                                  controller.setscreen(
-                                                      controller.alldata[index]
-                                                          .fulllink,
-                                                      "both");
-                                               
+                                                controller.setscreen(
+                                                    controller.alldata[index]
+                                                        .fulllink,
+                                                    "both");
                                               },
                                               child: const Text("BothScreens"))
                                         ],

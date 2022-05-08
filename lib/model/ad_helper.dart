@@ -7,7 +7,7 @@ class Adhelper {
   static BannerAd getbanerad() {
     return BannerAd(
         size: Get.width <= 468 ? AdSize.banner : AdSize.fullBanner,
-        adUnitId: "ca-app-pub-3940256099942544/6300978111",
+        adUnitId: "REMOVED_AD_UNIT",
         // ca-app-pub-3940256099942544/6300978111    test
         // REMOVED_AD_UNIT    real
         listener: BannerAdListener(onAdLoaded: (ad) {
@@ -25,7 +25,7 @@ class Adhelper {
   static getInterstitialad() {
     if (Platform.isAndroid) {
       InterstitialAd.load(
-        adUnitId: "ca-app-pub-3940256099942544/1033173712",
+        adUnitId: "REMOVED_AD_UNIT",
         //ca-app-pub-3940256099942544/1033173712     test
         //REMOVED_AD_UNIT     real
         request: const AdRequest(),
@@ -48,7 +48,7 @@ class Adhelper {
     AppOpenAd? openad;
     if (Platform.isAndroid) {
       await AppOpenAd.load(
-          adUnitId: 'ca-app-pub-3940256099942544/3419835294',
+          adUnitId: 'REMOVED_AD_UNIT',
 
           //  ca-app-pub-3940256099942544/3419835294  test
           //  REMOVED_AD_UNIT  real
