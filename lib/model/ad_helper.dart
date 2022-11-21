@@ -1,23 +1,20 @@
-import 'dart:convert';
-
+import 'package:get/get.dart';
 import 'package:flutterproject2/view/mainpage.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'dart:io';
 
 class Adhelper {
-  bool testmood = true;
-  bool nativeadloaded = false;
-
   static BannerAd getbanerad() {
     return BannerAd(
-        size: AdSize.banner,
-        adUnitId: "ca-app-pub-3940256099942544/6300978111",
+        size: Get.width <= 468 ? AdSize.banner : AdSize.fullBanner,
+        adUnitId: "REMOVED_AD_UNIT",
         // ca-app-pub-3940256099942544/6300978111    test
-        // REMOVED_ADS_ACCOUNT/8572530529    real
+        // REMOVED_AD_UNIT    real
         listener: BannerAdListener(onAdLoaded: (ad) {
           controller.bannerisready = true;
         }, onAdFailedToLoad: (ad, error) {
-          print("faild to load banner ad${error.message}");
+          // print("faild to load banner ad${error.message}");
+
           controller.bannerisready = false;
           ad.dispose();
         }),
@@ -28,20 +25,42 @@ class Adhelper {
   static getInterstitialad() {
     if (Platform.isAndroid) {
       InterstitialAd.load(
-        adUnitId: "ca-app-pub-3940256099942544/1033173712",
+        adUnitId: "REMOVED_AD_UNIT",
         //ca-app-pub-3940256099942544/1033173712     test
-        //REMOVED_ADS_ACCOUNT/5248702490     real
+        //REMOVED_AD_UNIT     real
         request: const AdRequest(),
         adLoadCallback: InterstitialAdLoadCallback(onAdLoaded: (ad) {
           controller.rewardad = ad;
 
           controller.videoisadready = true;
         }, onAdFailedToLoad: (LoadAdError error) {
-          print("faild to load Interstitial ad${error.message}");
+          // print("faild to load Interstitial ad${error.message}");
 
           throw UnsupportedError("faild");
         }),
       );
+    } else {
+      throw UnsupportedError("not andriod");
+    }
+  }
+
+  static getappopenad() async {
+    AppOpenAd? openad;
+    if (Platform.isAndroid) {
+      await AppOpenAd.load(
+          adUnitId: 'REMOVED_AD_UNIT',
+
+          //  ca-app-pub-3940256099942544/3419835294  test
+          //  REMOVED_AD_UNIT  real
+
+          request: const AdRequest(),
+          adLoadCallback: AppOpenAdLoadCallback(onAdLoaded: ((ad) {
+            openad = ad;
+            openad!.show();
+          }), onAdFailedToLoad: (LoadAdError error) {
+            // print(error);
+          }),
+          orientation: AppOpenAd.orientationPortrait);
     } else {
       throw UnsupportedError("not andriod");
     }

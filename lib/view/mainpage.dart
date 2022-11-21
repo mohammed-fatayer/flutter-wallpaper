@@ -1,44 +1,43 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutterproject2/model/ad_helper.dart';
-import 'package:flutterproject2/model/wallpaper_model.dart';
-import 'package:gallery_saver/gallery_saver.dart';
 import 'package:get/get.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../controller/wallpapercontroller.dart';
-import 'package:gallery_saver/gallery_saver.dart';
-import 'package:timeago/timeago.dart' as timeago;
+import 'package:store_redirect/store_redirect.dart';
 
 ScrollController scrollController = Get.find();
 Newscontroller controller = Get.find();
 
 class MainPage extends StatelessWidget {
-  MainPage({Key? key}) : super(key: key);
+  const MainPage({Key? key}) : super(key: key);
 
-  int selectedindex = 0;
+  // int selectedindex = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Game News"),
+          title: const Text("Wallpapers"),
           centerTitle: true,
+          actions: [
+            IconButton(
+                onPressed: () {
+                  StoreRedirect.redirect(
+                      androidAppId: "com.leos.anime_wallpaper");
+                },
+                icon: const Icon(Icons.star))
+          ],
         ),
-        // bottomNavigationBar: BottomNavigationBar(
-        //     currentIndex: selectedindex,
-        //     onTap: (index) {
-        //       setState(() {
-        //         selectedindex = index;
-        //       });
-        //     },
-        //     backgroundColor: Colors.white24,
-        //     items: const [
-        //       BottomNavigationBarItem(icon: Icon(Icons.ac_unit), label: "1"),
-        //       BottomNavigationBarItem(icon: Icon(Icons.ac_unit), label: "2"),
-        //       BottomNavigationBarItem(icon: Icon(Icons.ac_unit), label: "3"),
-        //     ]),
+        bottomNavigationBar: BottomAppBar(
+          child: controller.bannerisready
+              ? SizedBox(
+                  height: 60,
+                  width: Get.width,
+                  child: AdWidget(ad: controller.bannerad))
+              : const SizedBox(),
+        ),
         drawer: Drawer(
           child: GetBuilder<Newscontroller>(
             builder: (controller) => Column(
@@ -47,7 +46,7 @@ class MainPage extends StatelessWidget {
                     accountName: Text(""),
                     accountEmail: Text(""),
                     currentAccountPicture: CircleAvatar(
-                      backgroundImage: AssetImage("images/lan.png"),
+                      backgroundImage: AssetImage("images/la.png"),
                     )),
                 SwitchListTile(
                     value: controller.bol2,
@@ -58,6 +57,14 @@ class MainPage extends StatelessWidget {
                     onChanged: (val) {
                       controller.theme(val);
                     }),
+                ListTile(
+                  title: const Text("Rate App"),
+                  leading: const Icon(Icons.star),
+                  onTap: () {
+                    StoreRedirect.redirect(
+                        androidAppId: "com.leos.anime_wallpaper");
+                  },
+                )
                 // ListTile(
                 //     title: const Text("home page"),
                 //     leading: const Icon(Icons.home),
@@ -102,7 +109,7 @@ class MainPage extends StatelessWidget {
                     child: GridView.builder(
                       gridDelegate:
                           const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 100,
+                        maxCrossAxisExtent: 210,
                         mainAxisExtent: 210,
                         childAspectRatio: 1 / 2,
                         crossAxisSpacing: 20,
@@ -112,65 +119,61 @@ class MainPage extends StatelessWidget {
                       itemCount: controller.currentmax + controller.indecator(),
                       itemBuilder: (BuildContext context, int index) {
                         // controller.ads(index);
-
-                        return index == controller.currentmax
-                            ? const CupertinoActivityIndicator()
-                            : InkWell(
-                                onTap: () {
-                                  int max = Random().nextInt(2);
-                                  if (controller.videoisadready && max == 1) {
-                                    controller.rewardad.show();
-                                    controller.rewardad
-                                            .fullScreenContentCallback =
-                                        FullScreenContentCallback(
-                                            onAdDismissedFullScreenContent:
-                                                (ad) {
-                                      controller.rewardad.dispose();
-                                      controller.videoisadready = false;
-                                      Adhelper.getInterstitialad();
-                                      controller.fullimage(index);
-                                      Get.to(() => Fullimagescreen(
-                                            index: index,
-                                          ));
-                                    });
-                                  } else {
-                                    controller.fullimage(index);
-                                    Get.to(() => Fullimagescreen(
-                                          index: index,
-                                        ));
-                                  }
-                                },
-                                child: Column(
-                                  children: [
-                                    SizedBox(
-                                        height: 205,
-                                        width: 150,
-                                        child: AspectRatio(
-                                          aspectRatio: 1,
-                                          child: Hero(
-                                            tag: index,
-                                            child: ClipRRect(
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                              child: Image.network(
+                        if (index + 1 == controller.currentmax) {
+                          return const SizedBox(
+                            height: 205,
+                            width: 150,
+                            child: Center(
+                                child: CircularProgressIndicator.adaptive(
+                                    backgroundColor: Colors.white)),
+                          );
+                        } else {
+                          return InkWell(
+                            onTap: () {
+                              int max = Random().nextInt(2);
+                              if (controller.videoisadready && max == 1) {
+                                controller.showvideo();
+                                controller.fullimage(index);
+                                Get.to(() => Fullimagescreen(
+                                      index: index,
+                                    ));
+                              } else {
+                                controller.fullimage(index);
+                                Get.to(() => Fullimagescreen(
+                                      index: index,
+                                    ));
+                              }
+                            },
+                            child: Column(
+                              children: [
+                                SizedBox(
+                                    height: 205,
+                                    width: 150,
+                                    child: AspectRatio(
+                                      aspectRatio: 1,
+                                      child: Hero(
+                                        tag: index,
+                                        child: ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(20),
+                                          child: CachedNetworkImage(
+                                            imageUrl:
                                                 "${controller.alldata[index].thumblink}",
-                                                loadingBuilder: (context, child,
-                                                    loadingProgress) {
-                                                  if (loadingProgress == null) {
-                                                    return child;
-                                                  } else {
-                                                    return const Center(child: CircularProgressIndicator(),);
-                                                  }
-                                                },
-                                                fit: BoxFit.cover,
-                                                alignment: Alignment.topCenter,
-                                              ),
+                                            placeholder: (context, url) =>
+                                                const Center(
+                                              child:
+                                                  CircularProgressIndicator(),
                                             ),
+                                            fit: BoxFit.cover,
+                                            alignment: Alignment.topCenter,
                                           ),
-                                        )),
-                                  ],
-                                ),
-                              );
+                                        ),
+                                      ),
+                                    )),
+                              ],
+                            ),
+                          );
+                        }
                       },
                     ),
                   ))));
@@ -186,89 +189,99 @@ class Fullimagescreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Game News"),
+          title: const Text("Wallpapers"),
           centerTitle: true,
+          actions: [
+            IconButton(
+                onPressed: () {
+                  StoreRedirect.redirect(
+                      androidAppId: "com.leos.anime_wallpaper");
+                },
+                icon: const Icon(Icons.star))
+          ],
         ),
         body: GetBuilder<Newscontroller>(
-            builder: (controller) => ListView(
+            builder: (controller) => Stack(
                   children: [
-                    Column(
-                      children: [
-                        SizedBox(
-                            height: 500,
-                            width: double.infinity,
-                            child: Hero(
-                                tag: index,
-                                child: controller.isimageready
-                                    ? controller.fullimagesize
-                                    : Image.network(
+                    SizedBox(
+                      height: Get.height,
+                      child: ListView(
+                        shrinkWrap: true,
+                        children: [
+                          Hero(
+                            tag: index,
+                            child: controller.isimageready
+                                ? controller.fullimagesize
+                                : CachedNetworkImage(
+                                    imageUrl:
                                         "${controller.alldata[index].thumblink}",
-                                       
-                                        fit: BoxFit.cover,
-                                      ))),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            ElevatedButton.icon(
-                                onPressed: () {
-                                  controller.downloadwallpaper(
-                                      controller.alldata[index].fulllink);
-                                },
-                                icon: const Icon(Icons.download),
-                                label: const Text("download")),
-                            const SizedBox(
-                              width: 50,
-                            ),
-                            ElevatedButton.icon(
-                                onPressed: () {
-                                  showModalBottomSheet(
-                                      context: context,
-                                      builder: (context) => SizedBox(
-                                            height: Get.height * 0.3,
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.stretch,
-                                              mainAxisSize: MainAxisSize.max,
-                                              children: [
-                                                ElevatedButton(
-                                                    onPressed: () {
-                                                      controller.setscreen(
-                                                          controller
-                                                              .alldata[index]
-                                                              .fulllink,
-                                                          "home");
-                                                    },
-                                                    child: const Text(
-                                                        "HomeScreen")),
-                                                ElevatedButton(
-                                                    onPressed: () {
-                                                      controller.setscreen(
-                                                          controller
-                                                              .alldata[index]
-                                                              .fulllink,
-                                                          "lock");
-                                                    },
-                                                    child: const Text(
-                                                        "LockScreen")),
-                                                ElevatedButton(
-                                                    onPressed: () {
-                                                      controller.setscreen(
-                                                          controller
-                                                              .alldata[index]
-                                                              .fulllink,
-                                                          "both");
-                                                    },
-                                                    child: const Text(
-                                                        "BothScreen"))
-                                              ],
-                                            ),
-                                          ));
-                                },
-                                icon: const Icon(Icons.screen_share),
-                                label: const Text("set wallpaper"))
-                          ],
-                        )
-                      ],
+                                    placeholder: (context, url) =>
+                                        const CircularProgressIndicator(),
+                                    fit: BoxFit.cover,
+                                    alignment: Alignment.topCenter,
+                                  ),
+                          )
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 30,
+                      left: 5,
+                      child: FloatingActionButton.extended(
+                          heroTag: "btn1",
+                          onPressed: () {
+                            controller.downloadwallpaper(
+                                controller.alldata[index].fulllink,
+                                controller.alldata[index].name);
+                          },
+                          icon: const Icon(Icons.download),
+                          label: const Text("download")),
+                    ),
+                    Positioned(
+                      bottom: 30,
+                      right: 5,
+                      child: FloatingActionButton.extended(
+                          heroTag: "btn2",
+                          onPressed: () {
+                            showModalBottomSheet(
+                                context: context,
+                                builder: (context) => SizedBox(
+                                      height: 150,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        mainAxisSize: MainAxisSize.max,
+                                        children: [
+                                          ElevatedButton(
+                                              onPressed: () {
+                                                controller.setscreen(
+                                                    controller.alldata[index]
+                                                        .fulllink,
+                                                    "home");
+                                              },
+                                              child: const Text("HomeScreen")),
+                                          ElevatedButton(
+                                              onPressed: () {
+                                                controller.setscreen(
+                                                    controller.alldata[index]
+                                                        .fulllink,
+                                                    "lock");
+                                              },
+                                              child: const Text("LockScreen")),
+                                          ElevatedButton(
+                                              onPressed: () {
+                                                controller.setscreen(
+                                                    controller.alldata[index]
+                                                        .fulllink,
+                                                    "both");
+                                              },
+                                              child: const Text("BothScreens"))
+                                        ],
+                                      ),
+                                    ));
+                          },
+                          icon: const Icon(Icons.screen_share),
+                          label: const Text("set wallpaper")),
                     )
                   ],
                 )));

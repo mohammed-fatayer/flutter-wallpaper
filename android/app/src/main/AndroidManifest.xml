@@ -6,9 +6,10 @@
          <uses-permission android:name="android.permission.VIBRATE" />
          <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
    <application
-        android:label="over 9000 anime wallpaper"
+        android:label="Anime Wallpaper"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
+
         
         <activity
             android:name=".MainActivity"
@@ -38,12 +39,16 @@
             android:value="2" />
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>
+            android:value="REMOVED_ADMOB_APP_ID"/>
             <!-- 
                 ca-app-pub-3940256099942544~3347511713   test
 
-                REMOVED_ADS_ACCOUNT~9378783102   real
+                REMOVED_ADMOB_APP_ID   real
              -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+     
             
     
     </application>
