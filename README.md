@@ -1,4 +1,4 @@
-# Anime wallpaper
+#  wallpaper
 
 Flutter-powered wallpaper app designed to bring a personalized touch to your device.
 Explore an extensive collection of high-quality wallpapers and effortlessly set them as your device's backdrop.
