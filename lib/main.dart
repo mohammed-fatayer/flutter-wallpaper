@@ -14,8 +14,8 @@ void main() async {
 
   await MobileAds.instance.initialize();
   await Firebase.initializeApp();
-  FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
-  FirebaseAnalyticsObserver(analytics: _analytics);
+  FirebaseAnalytics analytics = FirebaseAnalytics.instance;
+  FirebaseAnalyticsObserver(analytics: analytics);
   await PlaystoreUpdate.checkForUpdate();
   // Adhelper.getbanerad();
 
@@ -26,16 +26,20 @@ void main() async {
 }
 
 class Myapp extends StatelessWidget {
-  const Myapp({Key? key}) : super(key: key);
+  const Myapp({super.key});
 
   @override
   Widget build(BuildContext context) {
     GetStorage box = GetStorage();
-    bool bool1 = box.read("darktheme") ?? false;
+    bool? storedDark = box.read("darktheme");
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: bool1 == false ? ThemeData.dark() : ThemeData.light(),
+      theme: ThemeData.light(useMaterial3: true),
+      darkTheme: ThemeData.dark(useMaterial3: true),
+      themeMode: storedDark == null
+          ? ThemeMode.system
+          : (storedDark == true ? ThemeMode.dark : ThemeMode.light),
       initialBinding: MyBinding(),
       initialRoute: "/mainpage",
       getPages: [

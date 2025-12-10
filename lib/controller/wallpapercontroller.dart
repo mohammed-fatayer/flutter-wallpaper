@@ -1,15 +1,15 @@
 import 'dart:math';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterproject2/model/ad_helper.dart';
 import 'package:flutterproject2/model/wallpaper_model.dart';
-import 'package:flutterproject2/view/mainpage.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:gallery_saver/gallery_saver.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:store_redirect/store_redirect.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -32,12 +32,15 @@ class Newscontroller extends GetxController {
   Random random = Random();
   bool isLoadMoreRunning = false;
   int aviable = 1;
-  final fbm = FirebaseMessaging.instance;
+  FirebaseMessaging? fbm;
 
   ScrollController scrollController = Get.find();
   GetStorage box = GetStorage();
   @override
   void onInit() async {
+    if (Firebase.apps.isNotEmpty) {
+      fbm = FirebaseMessaging.instance;
+    }
     Adhelper.getInterstitialad();
     bannerad = Adhelper.getbanerad();
     // fbm.getToken().then((value) {
@@ -56,7 +59,7 @@ class Newscontroller extends GetxController {
     scrollController.addListener(() async {
       if (scrollController.position.pixels >
           scrollController.position.maxScrollExtent * 0.9) {
-        WidgetsBinding.instance?.addPostFrameCallback((_) async {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
           await newdata();
         });
       }
@@ -134,9 +137,9 @@ class Newscontroller extends GetxController {
               textConfirm: "Send",
               onCancel: () {},
               onConfirm: () {
-                CollectionReference _review =
+                CollectionReference review =
                     FirebaseFirestore.instance.collection('reviews');
-                _review.doc().set({"text": textvalue});
+                review.doc().set({"text": textvalue});
                 Get.back();
               },
               barrierDismissible: false);
@@ -147,8 +150,9 @@ class Newscontroller extends GetxController {
   }
 
   Future firebasenotifi() async {
-    var _message = await FirebaseMessaging.instance.getInitialMessage();
-    if (_message != null && _message.notification?.title == "Rate us") {
+    if (Firebase.apps.isEmpty) return;
+    var message = await FirebaseMessaging.instance.getInitialMessage();
+    if (message != null && message.notification?.title == "Rate us") {
       StoreRedirect.redirect(androidAppId: "com.leos.anime_wallpaper");
     }
   }
@@ -163,7 +167,7 @@ class Newscontroller extends GetxController {
 
   void fullimage(index) {
     Image fullimage = Image.network(
-      "${controller.alldata[index].fulllink}",
+      "${alldata[index].fulllink}",
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) {
           return child;
@@ -188,17 +192,14 @@ class Newscontroller extends GetxController {
   void theme(val) {
     bol2 = val;
     box.write("darktheme", bol2);
-    bol2 == false
-        ? Get.changeTheme(ThemeData.dark())
-        : Get.changeTheme(ThemeData.light());
-
+    Get.changeThemeMode(bol2 == true ? ThemeMode.dark : ThemeMode.light);
     update();
   }
 
   Future newdata() async {
     if (aviable == 1) {
       aviable = 0;
-      WidgetsBinding.instance?.addPostFrameCallback((_) async {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         await neWwallpaper();
 
         if (currentmax == alldata.length) {
@@ -236,18 +237,18 @@ class Newscontroller extends GetxController {
 
   Future _wallpaper() async {
     wallpaperlist = [];
-    late int _maximages;
+    late int maximages;
     String fulllink;
 
-    CollectionReference _note =
+    CollectionReference note =
         FirebaseFirestore.instance.collection('maximages');
     CollectionReference<Map> firestoreref =
         FirebaseFirestore.instance.collection('wallpaper');
-    await _note
+    await note
         .doc("FexINAwsq1wXNprktbCI")
         .get()
         .then((DocumentSnapshot documentSnapshot) {
-      _maximages = documentSnapshot["maximages"];
+      maximages = documentSnapshot["maximages"];
     });
 
     // final storageRef = FirebaseStorage.instance.ref();
@@ -256,21 +257,20 @@ class Newscontroller extends GetxController {
 // Create a reference with an initial file path and name
 
     try {
-      int range = random.nextInt(_maximages);
+      int range = random.nextInt(maximages);
       await firestoreref
           .where("id", isGreaterThan: range, isLessThan: range + 25)
           .get()
-          .then((value) => value.docs.forEach((element) {
-                fulllink = element.data()["thumbUrl"];
-                fulllink = fulllink.replaceAll("thumbnails", "wallpapers");
-                // print(element.data()["name"]);
-                // print("========================");
-
-                wallpaperlist.add(Wallpaper1(
-                    thumblink: element.data()["thumbUrl"],
-                    fulllink: fulllink,
-                    name: element.data()["name"]));
-              }));
+          .then((value) {
+        for (var element in value.docs) {
+          fulllink = element.data()["thumbUrl"];
+          fulllink = fulllink.replaceAll("thumbnails", "wallpapers");
+          wallpaperlist.add(Wallpaper1(
+              thumblink: element.data()["thumbUrl"],
+              fulllink: fulllink,
+              name: element.data()["name"]));
+        }
+      });
       wallpaperlist.shuffle();
     } catch (e) {
       // print("not found ============================================");
@@ -289,8 +289,11 @@ class Newscontroller extends GetxController {
   }
 
   Future setscreen(String url, String location) async {
+    Get.dialog(const Center(child: CircularProgressIndicator()),
+        barrierDismissible: false);
     var filepath = await cachwallpaper(url);
     await bothscreenmethod(filepath.path, location);
+    Get.back();
     Get.snackbar("set $location", "Done",
         maxWidth: double.infinity,
         snackPosition: SnackPosition.BOTTOM,
@@ -331,7 +334,7 @@ class Newscontroller extends GetxController {
       final temp = await getTemporaryDirectory();
       final path = "${temp.path}/$name";
       await Dio().download(url, path);
-      await GallerySaver.saveImage(path, albumName: "Wallpapers");
+      await ImageGallerySaverPlus.saveFile(path);
       Get.snackbar("Download", "Done",
           snackPosition: SnackPosition.BOTTOM,
           duration: const Duration(milliseconds: 800));
