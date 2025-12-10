@@ -7,9 +7,6 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../controller/wallpapercontroller.dart';
 import 'package:store_redirect/store_redirect.dart';
 
-ScrollController scrollController = Get.find();
-Newscontroller controller = Get.find();
-
 class MainPage extends StatelessWidget {
   const MainPage({Key? key}) : super(key: key);
 
@@ -17,6 +14,8 @@ class MainPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scrollController = Get.find<ScrollController>();
+    final controller = Get.find<Newscontroller>();
     return Scaffold(
         appBar: AppBar(
           title: const Text("Wallpapers"),
@@ -52,7 +51,7 @@ class MainPage extends StatelessWidget {
                     value: controller.bol2,
                     controlAffinity: ListTileControlAffinity.trailing,
                     title: const Text("Theme"),
-                    subtitle: Text(controller.bol2 == false ? "dark" : "light"),
+                    subtitle: Text(controller.bol2 == true ? "dark" : "light"),
                     secondary: const Icon(Icons.flag),
                     onChanged: (val) {
                       controller.theme(val);

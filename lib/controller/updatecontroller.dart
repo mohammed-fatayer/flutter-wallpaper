@@ -1,4 +1,5 @@
 import 'package:flutterproject2/model/ad_helper.dart';
+import 'package:flutter/foundation.dart';
 import 'package:in_app_update/in_app_update.dart';
 
 AppUpdateInfo? _updateInfo;
@@ -14,12 +15,14 @@ class PlaystoreUpdate {
   }
 
   static preformupdate() async {
-    _updateInfo?.updateAvailability == UpdateAvailability.updateAvailable
-        ? () {
-            InAppUpdate.performImmediateUpdate().catchError((e) {
-              // print(e.toString());
-            });
-          }
-        : Adhelper.getappopenad();
+    if (_updateInfo?.updateAvailability == UpdateAvailability.updateAvailable) {
+      try {
+        await InAppUpdate.performImmediateUpdate();
+      } catch (e) {
+        debugPrint(e.toString());
+      }
+    } else {
+      Adhelper.getappopenad();
+    }
   }
 }
