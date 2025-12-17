@@ -7,9 +7,9 @@ class Adhelper {
   static BannerAd getbanerad() {
     return BannerAd(
         size: Get.width <= 468 ? AdSize.banner : AdSize.fullBanner,
-        adUnitId: "ca-app-pub-2675606651389917/1119643385",
+        adUnitId: "ca-app-pub-3940256099942544/6300978111",
         // ca-app-pub-3940256099942544/6300978111    test
-        // ca-app-pub-2675606651389917/1119643385    real
+      
         listener: BannerAdListener(onAdLoaded: (ad) {
           final c = Get.isRegistered<Newscontroller>()
               ? Get.find<Newscontroller>()
@@ -30,9 +30,9 @@ class Adhelper {
   static void getInterstitialad() {
     if (Platform.isAndroid) {
       InterstitialAd.load(
-        adUnitId: "ca-app-pub-2675606651389917/3569998160",
+        adUnitId: "ca-app-pub-3940256099942544/1033173712",
         //ca-app-pub-3940256099942544/1033173712     test
-        //ca-app-pub-2675606651389917/3569998160     real
+     
         request: const AdRequest(),
         adLoadCallback: InterstitialAdLoadCallback(onAdLoaded: (ad) {
           final c = Get.isRegistered<Newscontroller>()
@@ -57,10 +57,10 @@ class Adhelper {
     AppOpenAd? openad;
     if (Platform.isAndroid) {
       await AppOpenAd.load(
-        adUnitId: 'ca-app-pub-2675606651389917/3656458183',
+        adUnitId: 'ca-app-pub-3940256099942544/3419835294',
 
         //  ca-app-pub-3940256099942544/3419835294  test
-        //  ca-app-pub-2675606651389917/3656458183  real
+     
 
         request: const AdRequest(),
         adLoadCallback: AppOpenAdLoadCallback(onAdLoaded: ((ad) {
@@ -75,21 +75,5 @@ class Adhelper {
     }
   }
 
-  // static getrewardad() {
-  //   if (Platform.isAndroid) {
-  //     RewardedAd.load(
-  //       adUnitId: "ca-app-pub-3940256099942544/5224354917",
-  //       rewardedAdLoadCallback: RewardedAdLoadCallback(onAdLoaded: (ad) {
-  //         controller.rewardad = ad;
-  //       }, onAdFailedToLoad: (LoadAdError error) {
-  //         print("faild to load banner ad${error.message}");
 
-  //         throw UnsupportedError("faild");
-  //       }),
-  //       request: const AdRequest(),
-  //     );
-  //   } else {
-  //     throw UnsupportedError("not andriod");
-  //   }
-  // }
 }
